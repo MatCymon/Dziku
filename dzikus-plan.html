@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DZIKUS — Plan Treningowy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#131519;
+    --bg-alt:#0e0f12;
+    --surface:#1c1f25;
+    --surface-hi:#242830;
+    --border:#2b303a;
+    --text:#eef0f2;
+    --text-dim:#9aa1ac;
+    --text-faint:#646b76;
+    --accent:#e8543d;
+    --accent-hi:#ff6a4d;
+    --accent-dim:rgba(232,84,61,0.14);
+    --steel:#4fa8c9;
+    --steel-dim:rgba(79,168,201,0.13);
+    --done:#45b37c;
+    --done-dim:rgba(69,179,124,0.16);
+    --radius:16px;
+    --radius-sm:10px;
+    --font-display:'Bebas Neue',sans-serif;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(232,84,61,0.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:64px;
+  }
+  ::selection{background:var(--accent-dim);}
+  a{color:inherit;}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(19,21,25,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px 0;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;padding:2px 4px 12px;flex-wrap:wrap;}
+  .brand-mark{
+    font-family:var(--font-display);
+    font-size:30px;letter-spacing:2px;
+    color:var(--text);
+    line-height:1;
+  }
+  .brand-mark span{color:var(--accent);}
+  .brand-sub{
+    font-size:11.5px;color:var(--text-faint);
+    text-transform:uppercase;letter-spacing:1.5px;
+    font-weight:600;
+  }
+  .info-toggle{
+    margin-left:auto;
+    font-family:var(--font-mono);
+    font-size:11px;color:var(--text-dim);
+    border:1px solid var(--border);
+    background:var(--surface);
+    padding:6px 10px;border-radius:20px;
+    cursor:pointer;user-select:none;
+  }
+  .info-toggle:hover{border-color:var(--steel);color:var(--steel);}
+
+  .glossary{
+    max-width:920px;margin:0 auto;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;margin-bottom:12px;
+    font-size:13px;color:var(--text-dim);
+    display:none;
+    line-height:1.6;
+  }
+  .glossary.open{display:block;}
+  .glossary b{color:var(--text);font-family:var(--font-mono);font-weight:600;}
+
+  .day-tabs{
+    display:flex;gap:8px;max-width:920px;margin:0 auto;
+    padding-bottom:12px;
+  }
+  .day-tab{
+    flex:1;display:flex;align-items:center;gap:10px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:9px 10px;cursor:pointer;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .day-tab:active{transform:scale(0.98);}
+  .day-tab.active{
+    border-color:var(--accent);
+    background:linear-gradient(180deg,var(--accent-dim),transparent);
+  }
+  .day-tab .letter{
+    font-family:var(--font-display);
+    font-size:22px;color:var(--text-dim);
+    width:30px;height:30px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    border:2px solid var(--border);
+  }
+  .day-tab.active .letter{color:var(--accent);border-color:var(--accent);}
+  .day-tab .meta{display:flex;flex-direction:column;line-height:1.15;overflow:hidden;}
+  .day-tab .meta b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .day-tab .meta small{font-size:10px;color:var(--text-faint);font-family:var(--font-mono);}
+
+  /* ---------- main ---------- */
+  main{max-width:920px;margin:0 auto;padding:18px 16px 0;}
+
+  .day-head{
+    display:flex;gap:18px;align-items:center;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px;margin-bottom:16px;
+    animation:fadeUp .35s ease both;
+  }
+  .ring-wrap{position:relative;width:88px;height:88px;flex:none;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-track{fill:none;stroke:var(--border);stroke-width:8;}
+  .ring-fill{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;
+    transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1);}
+  .ring-hole{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+  .ring-hole b{font-family:var(--font-mono);font-size:16px;}
+  .ring-hole small{font-size:8.5px;color:var(--text-faint);letter-spacing:.5px;}
+
+  .day-head-text{min-width:0;}
+  .day-head-text h1{
+    font-family:var(--font-display);
+    font-size:30px;letter-spacing:1px;margin:0 0 2px;
+    color:var(--text);
+  }
+  .day-head-text .subtitle{color:var(--accent);font-weight:600;font-size:13px;margin-bottom:8px;}
+  .goal-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .goal-chip{
+    font-size:11px;background:var(--surface-hi);
+    border:1px solid var(--border);color:var(--text-dim);
+    padding:3px 9px;border-radius:20px;
+  }
+  .day-sub-meta{font-size:11.5px;color:var(--text-faint);font-family:var(--font-mono);}
+
+  .section-label{
+    font-family:var(--font-display);
+    font-size:15px;letter-spacing:1.5px;color:var(--text-dim);
+    margin:22px 0 10px 2px;text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-label .line{flex:1;height:1px;background:var(--border);}
+
+  /* warmup */
+  .warmup-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:6px;margin-bottom:6px;
+  }
+  .warm-item{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 10px;border-radius:var(--radius-sm);
+    cursor:pointer;
+  }
+  .warm-item:hover{background:var(--surface-hi);}
+  .warm-item .txt{font-size:13.5px;color:var(--text-dim);}
+  .warm-item.checked .txt{color:var(--text-faint);text-decoration:line-through;}
+
+  /* exercise cards */
+  .ex-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:16px;margin-bottom:12px;
+    animation:fadeUp .35s ease both;
+    transition:border-color .2s, background .2s;
+  }
+  .ex-card.done{border-color:var(--done);background:linear-gradient(180deg,var(--done-dim),var(--surface) 40%);}
+  .ex-top{display:flex;gap:12px;align-items:flex-start;}
+  .ex-num{
+    font-family:var(--font-mono);font-weight:600;font-size:13px;
+    width:30px;height:30px;flex:none;border-radius:8px;
+    background:var(--surface-hi);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;color:var(--text-dim);
+  }
+  .ex-card.done .ex-num{background:var(--done-dim);border-color:var(--done);color:var(--done);}
+  .ex-title{flex:1;min-width:0;}
+  .ex-title h3{margin:0;font-size:16.5px;font-weight:700;letter-spacing:.2px;}
+  .ex-card.done .ex-title h3{color:var(--text-dim);text-decoration:line-through;text-decoration-color:var(--text-faint);}
+  .ex-sets{font-family:var(--font-mono);font-size:14px;color:var(--accent-hi);font-weight:600;margin-top:3px;}
+  .ex-card.done .ex-sets{color:var(--text-faint);}
+
+  .check{
+    flex:none;width:28px;height:28px;border-radius:50%;
+    border:2px solid var(--border);background:var(--bg-alt);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all .15s;
+  }
+  .check svg{width:15px;height:15px;opacity:0;transform:scale(.5);transition:all .15s;}
+  .check:hover{border-color:var(--accent);}
+  .checked-box{background:var(--done);border-color:var(--done);}
+  .checked-box svg{opacity:1;transform:scale(1);}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;}
+  .chip{
+    font-family:var(--font-mono);font-size:11px;
+    background:var(--surface-hi);border:1px solid var(--border);
+    color:var(--text-dim);padding:4px 9px;border-radius:7px;
+    display:flex;gap:5px;align-items:center;
+  }
+  .chip b{color:var(--text);font-weight:600;}
+  .chip.warn{border-color:rgba(232,84,61,0.35);color:var(--accent-hi);}
+
+  .notes-block{margin-top:10px;}
+  .notes-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--text-faint);margin-bottom:4px;font-weight:700;}
+  .notes-block ul{margin:0;padding-left:18px;color:var(--text-dim);font-size:13px;line-height:1.6;}
+
+  .target-box{
+    margin-top:10px;padding:9px 12px;
+    border-left:3px solid var(--steel);
+    background:var(--steel-dim);border-radius:0 8px 8px 0;
+    font-size:13px;color:var(--text);
+    display:flex;gap:8px;
+  }
+  .target-box span.arrow{color:var(--steel);flex:none;}
+
+  .coach-box{
+    margin-top:8px;padding:10px 12px;
+    background:var(--accent-dim);border-radius:8px;
+    font-size:12.5px;color:var(--text-dim);font-style:italic;
+    display:flex;gap:8px;
+  }
+  .coach-box .who{flex:none;font-style:normal;font-size:14px;}
+
+  /* volume table */
+  .volume-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:16px;margin:16px 0 24px;
+  }
+  .volume-card h4{
+    font-family:var(--font-display);letter-spacing:1px;font-size:16px;
+    margin:0 0 10px;color:var(--text-dim);text-transform:uppercase;
+  }
+  table.volume{width:100%;border-collapse:collapse;font-size:13px;}
+  table.volume td{padding:7px 4px;border-bottom:1px solid var(--border);}
+  table.volume td:first-child{color:var(--text-dim);}
+  table.volume td:last-child{text-align:right;font-family:var(--font-mono);color:var(--text);}
+  .volume-total{
+    display:flex;justify-content:space-between;margin-top:10px;
+    padding-top:10px;border-top:1px solid var(--border);
+    font-family:var(--font-mono);font-size:13px;color:var(--accent-hi);font-weight:600;
+  }
+
+  .day-actions{display:flex;justify-content:center;margin:4px 0 30px;}
+  .reset-day{
+    background:none;border:1px solid var(--border);color:var(--text-faint);
+    font-size:11.5px;padding:8px 16px;border-radius:20px;cursor:pointer;
+    font-family:var(--font-body);
+  }
+  .reset-day:hover{border-color:var(--accent);color:var(--accent);}
+
+  footer{
+    max-width:920px;margin:20px auto 0;padding:0 16px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .reset-all{
+    background:var(--surface);border:1px solid var(--border);
+    color:var(--text-dim);font-size:12px;padding:9px 18px;
+    border-radius:20px;cursor:pointer;font-family:var(--font-body);
+  }
+  .reset-all:hover{border-color:var(--accent);color:var(--accent-hi);}
+  .footnote{font-size:11px;color:var(--text-faint);text-align:center;max-width:400px;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  @media (max-width:480px){
+    .brand-mark{font-size:26px;}
+    .day-tab .meta{display:none;}
+    .day-tab{justify-content:center;padding:8px;}
+    .day-head{flex-direction:column;text-align:center;}
+    .goal-row{justify-content:center;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">DZIK<span>US</span></div>
+    <div class="brand-sub">Hybrid Strength — plan treningowy</div>
+    <div class="info-toggle" id="infoToggle">ℹ️ Skróty</div>
+  </div>
+  <div class="glossary" id="glossary">
+    <b>RIR</b> — Reps In Reserve, ile powtórzeń zostawiasz „w zapasie" przed upadkiem mięśniowym.<br>
+    <b>Tempo</b> — sekundy w fazach ruchu: ekscentryka–pauza dolna–koncentryka–pauza górna (np. 2-1-2-1). „X" = ruch eksplozywny.<br>
+    <b>Przerwa</b> — czas odpoczynku między seriami.
+  </div>
+  <nav class="day-tabs" id="dayTabs"></nav>
+</div>
+
+<main id="app"></main>
+
+<footer>
+  <button class="reset-all" id="resetAllBtn">Resetuj cały plan</button>
+  <div class="footnote">Zaznaczenia zapisują się automatycznie w tej przeglądarce (localStorage). Wyczyszczenie danych przeglądarki usunie postępy.</div>
+</footer>
+
+<script>
+const DATA = {
+  A: {
+    letter: "A",
+    title: "HYBRID A",
+    subtitle: "Pull Strength + Upper",
+    goals: ["Siła w podciąganiu","Rozbudowa pleców (V-Shape)","Rozbudowa klatki","Biceps","Barki","Przedramiona","Core"],
+    time: "90–110 min",
+    warmup: [
+      "5 min rower / szybki marsz",
+      "Band Pull Apart – 2×15",
+      "Scapular Pull-Up – 2×10",
+      "Dead Bug – 2×8/strona",
+      "90/90 Hip Switch – 2×8/strona",
+      "2–3 serie wprowadzające do Weighted Pull-Up"
+    ],
+    exercises: [
+      { name:"Weighted Pull-Up", sets:"4 × 4–6", rir:"2", tempo:"2-0-X-1", rest:"3–4 min", target:"Priorytet siłowy." },
+      { name:"Chest Supported Row", sets:"3 × 8–10", rir:"1–2", tempo:"2-1-2-1", rest:"2–3 min", target:"Budowa grubości pleców." },
+      { name:"Chest Press (maszyna)", sets:"3 × 6–8", rir:"1–2", tempo:"2-1-2-1", rest:"2–3 min", target:"Główne ćwiczenie na klatkę." },
+      { name:"Lat Pulldown", sets:"3 × 8–10", rir:"1", tempo:"2-1-2-1", rest:"2 min", target:"Maksymalizacja szerokości pleców." },
+      { name:"Cable Lateral Raise", sets:"3 × 12–15", rir:"0–1", tempo:"2-1-2-2", rest:"60–90 s", target:"Priorytet V-Shape." },
+      { name:"Cable Curl", sets:"3 × 8–12", rir:"0–1", tempo:"2-1-2-2", rest:"90 s", target:"Główna izolacja bicepsa." },
+      { name:"Wrist Curl + Reverse Wrist Curl", sets:"2 × 12–15 + 2 × 12–15", badge:"Superseria", rest:"60 s (po obu ćwiczeniach)", target:"Kompleksowy rozwój przedramion." },
+      { name:"Cable Crunch (Allahy)", sets:"3 × 10–15", rir:"0–1", tempo:"Kontrolowane", rest:"60 s", target:"Główne ćwiczenie na brzuch." },
+      { name:"Face Pull", sets:"2 × 15", notes:["Lekki ciężar.","Pełna kontrola.","Ściągnij łopatki."], target:"Zdrowie barków i tylny akton." },
+      { name:"External Rotation (guma lub wyciąg)", sets:"2 × 15", notes:["Lekko.","Powoli.","Nigdy do upadku."], target:"Rotatory barków – profilaktyka urazów." }
+    ],
+    volume: { rows:[["Plecy","10"],["Klatka","3"],["Biceps","3 (+ praca w podciąganiu i wiosłowaniu)"],["Barki boczne","3"],["Tylny bark","2"],["Rotatory","2"],["Przedramiona","4"],["Brzuch","3"]], total:"25 serii roboczych (plus rozgrzewka)" }
+  },
+  B: {
+    letter: "B",
+    title: "HYBRID B",
+    subtitle: "Lower Strength + Shoulders",
+    goals: ["Nogi (siła + masa)","Barki (szczególnie boczny akton)","Triceps","Łydki","Core"],
+    time: null,
+    warmup: null,
+    exercises: [
+      { name:"Leg Press (główne ćwiczenie nóg)", sets:"4 × 6–10", rir:"1–2", tempo:"3-1-1-0", rest:"2–3 min", notesLabel:"Wskazówki", notes:["pełny kontrolowany zakres,","kolana prowadź w kierunku palców,","nie odrywaj bioder od oparcia."], target:"czworogłowe + pośladki." },
+      { name:"Machine Shoulder Press", sets:"4 × 6–10", rir:"1–2", tempo:"2-1-2-1", rest:"2–3 min", target:"siła barków + przedni akton.", extra:"Nie robimy sztangi nad głowę, bo masz już dużo sportowej aktywności i maszyna pozwoli łatwiej kontrolować ruch." },
+      { name:"Romanian Deadlift z hantlami (RDL)", sets:"3 × 8–10", rir:"2", tempo:"3-1-1-0", rest:"2–3 min", notesLabel:"Najważniejsze", notes:["biodra idą do tyłu,","plecy neutralne,","hantle blisko nóg,","nie gonimy ciężaru."], target:"dwugłowe uda + pośladki + tylna taśma." },
+      { name:"Cable Lateral Raise", sets:"4 × 12–15", rir:"0–1", tempo:"2-1-2-2", rest:"60–90 s", target:"szerokość barków.", extra:"To jest jedno z najważniejszych ćwiczeń pod Twój V-shape." },
+      { name:"Leg Curl (uginanie nóg)", sets:"3 × 10–12", rir:"1", tempo:"2-1-2-1", target:"dwugłowy uda.", extra:"Dlaczego po RDL? Bo RDL daje pracę w rozciągnięciu, a leg curl dobija funkcję zgięcia kolana." },
+      { name:"Leg Extension", sets:"2 × 12–15", rir:"1", tempo:"2-1-2-1", target:"pełny rozwój czworogłowych.", extra:"Nie daję więcej, bo biegasz." },
+      { name:"Overhead Rope Triceps Extension", sets:"3 × 10–15", rir:"0–1", tempo:"2-1-2-1", target:"głowa długa tricepsa (ta, która najbardziej wpływa na wielkość ramienia)." },
+      { name:"Standing Calf Raise", sets:"3 × 8–12", rir:"1", target:"brzuchaty łydki." },
+      { name:"Seated Calf Raise", sets:"2 × 12–15", rir:"1", target:"płaszczkowaty łydki." },
+      { name:"Hanging Leg Raise", sets:"3 × 8–15", target:"dół brzucha + kontrola tułowia." },
+      { name:"Rotatory barku (guma/wyciąg)", sets:"2 × 15", notes:["Lekko.","Nie do upadku."], target:"zdrowe barki pod podciągania, dipy i wyciskania." }
+    ],
+    volume: { rows:[["Czworogłowe","6"],["Dwugłowe","6"],["Pośladki","3"],["Łydki","5"],["Barki","6"],["Triceps","3"],["Brzuch","3"],["Rotatory","2"]], total:"25 serii roboczych" }
+  },
+  C: {
+    letter: "C",
+    title: "HYBRID C",
+    subtitle: "Push Strength + Upper",
+    goals: ["Siła w dipach","Rozbudowa klatki","Triceps","Plecy (uzupełnienie tygodniowej objętości)","Barki","Stabilizacja nóg","Core"],
+    time: "ok. 90–110 min",
+    warmup: [
+      "5 min rower lub orbitrek",
+      "Band Pull Apart – 2×15",
+      "Scapular Push-Up – 2×10",
+      "Face Pull z gumą – 2×15",
+      "Mobilizacja barków i odcinka piersiowego – 2–3 min",
+      "2–3 serie rozgrzewkowe do dipów"
+    ],
+    exercises: [
+      { name:"Weighted Dip", sets:"4 × 4–6", rir:"2", tempo:"2-0-X-1", rest:"3–4 min", target:"Główne ćwiczenie siłowe na klatkę i triceps." },
+      { name:"Machine Chest Press", sets:"3 × 8–10", rir:"1–2", tempo:"2-1-2-1", rest:"2–3 min", target:"Główna hipertrofia klatki." },
+      { name:"Pec Deck Machine", sets:"3 × 12–15", rir:"0–1", tempo:"2-1-2-2", rest:"60–90 s", target:"Maksymalne rozciągnięcie i spięcie mięśni piersiowych." },
+      { name:"Neutral Grip Lat Pulldown", sets:"3 × 8–10", rir:"1", tempo:"2-1-2-1", rest:"2 min", target:"Uzupełnienie szerokości pleców." },
+      { name:"Chest Supported Row", sets:"3 × 10–12", rir:"1–2", tempo:"2-1-2-1", rest:"2 min", target:"Grubość pleców." },
+      { name:"Cable Lateral Raise", sets:"3 × 12–15", rir:"0–1", tempo:"2-1-2-2", rest:"60–90 s", target:"Boczny akton barków." },
+      { name:"Overhead Rope Triceps Extension", sets:"3 × 10–15", rir:"0–1", tempo:"2-1-2-2", rest:"60–90 s", target:"Głowa długa tricepsa." },
+      { name:"Cable Curl", sets:"2 × 10–12", rir:"1", tempo:"2-1-2-1", rest:"90 s", target:"Drugi bodziec tygodniowy dla bicepsa." },
+      { name:"Bulgarian Split Squat", sets:"2 × 8–10 / noga", rir:"2", tempo:"3-1-1-0", rest:"90–120 s", target:"Stabilizacja, pośladki i czworogłowe." },
+      { name:"Face Pull", sets:"2 × 15", rir:"2", tempo:"2-1-2-2", rest:"60 s", target:"Tylny bark i zdrowie barków." },
+      { name:"Cable Crunch (Allahy)", sets:"3 × 10–15", rir:"0–1", tempo:"2-1-2-2", rest:"60 s", target:"Główne ćwiczenie na mięśnie brzucha." }
+    ],
+    volume: { rows:[["Klatka","10 (4 dipy + 3 chest press + 3 pec deck)"],["Plecy","6"],["Triceps","7 (4 dipy + 3 izolacja)"],["Biceps","2"],["Boczny bark","3"],["Tylny bark","2"],["Nogi","2"],["Brzuch","3"]], total:"28 serii roboczych" }
+  }
+};
+
+const STORAGE_KEY = "dzikus_progress_v1";
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveState(state){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ /* storage unavailable — progress stays in-memory only */ }
+}
+
+let state = loadState();
+let currentDay = localStorage.getItem("dzikus_last_day") || "A";
+if(!DATA[currentDay]) currentDay = "A";
+
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function itemKey(dayKey, type, idx){ return dayKey+"-"+type+"-"+idx; }
+
+function dayCounts(dayKey){
+  const d = DATA[dayKey];
+  let total = d.exercises.length + (d.warmup ? d.warmup.length : 0);
+  let done = 0;
+  d.exercises.forEach((_,i)=>{ if(state[itemKey(dayKey,"ex",i)]) done++; });
+  if(d.warmup) d.warmup.forEach((_,i)=>{ if(state[itemKey(dayKey,"warm",i)]) done++; });
+  return {done, total};
+}
+
+function renderTabs(){
+  const nav = document.getElementById("dayTabs");
+  nav.innerHTML = "";
+  Object.keys(DATA).forEach(key=>{
+    const d = DATA[key];
+    const {done,total} = dayCounts(key);
+    const tab = document.createElement("div");
+    tab.className = "day-tab" + (key===currentDay ? " active" : "");
+    tab.innerHTML = `
+      <div class="letter">${d.letter}</div>
+      <div class="meta"><b>${d.title}</b><small>${done}/${total} • ${d.subtitle}</small></div>
+    `;
+    tab.addEventListener("click", ()=>{ currentDay = key; localStorage.setItem("dzikus_last_day", key); renderAll(); });
+    nav.appendChild(tab);
+  });
+}
+
+function metaChip(label, value, warn){
+  if(!value) return "";
+  return `<div class="chip${warn?" warn":""}">${label} <b>${value}</b></div>`;
+}
+
+function renderExercise(dayKey, ex, idx){
+  const key = itemKey(dayKey,"ex",idx);
+  const done = !!state[key];
+  let notesHtml = "";
+  if(ex.notes && ex.notes.length){
+    notesHtml = `<div class="notes-block">
+      ${ex.notesLabel ? `<div class="notes-label">${ex.notesLabel}</div>` : ""}
+      <ul>${ex.notes.map(n=>`<li>${n}</li>`).join("")}</ul>
+    </div>`;
+  }
+  let coachHtml = "";
+  if(ex.extra){
+    coachHtml = `<div class="coach-box"><span class="who">💬</span><span>${ex.extra}</span></div>`;
+  }
+  return `
+  <div class="ex-card${done?" done":""}" data-key="${key}">
+    <div class="ex-top">
+      <div class="ex-num">${idx+1}</div>
+      <div class="ex-title">
+        <h3>${ex.name}</h3>
+        <div class="ex-sets">${ex.sets}</div>
+      </div>
+      <div class="check${done?" checked-box":""}" data-toggle="${key}">${CHECK_SVG}</div>
+    </div>
+    <div class="chip-row">
+      ${ex.badge ? `<div class="chip warn">${ex.badge}</div>` : ""}
+      ${metaChip("RIR", ex.rir)}
+      ${metaChip("Tempo", ex.tempo)}
+      ${metaChip("Przerwa", ex.rest)}
+    </div>
+    ${notesHtml}
+    ${ex.target ? `<div class="target-box"><span class="arrow">➡</span><span>${ex.target}</span></div>` : ""}
+    ${coachHtml}
+  </div>`;
+}
+
+function renderDay(dayKey){
+  const d = DATA[dayKey];
+  const {done,total} = dayCounts(dayKey);
+  const pct = total ? done/total : 0;
+  const r = 36, circ = 2*Math.PI*r;
+  const offset = circ * (1-pct);
+
+  let warmHtml = "";
+  if(d.warmup){
+    warmHtml = `
+    <div class="section-label"><span class="line"></span>🔥 Rozgrzewka${d.time ? "" : ""}<span class="line"></span></div>
+    <div class="warmup-card">
+      ${d.warmup.map((w,i)=>{
+        const key = itemKey(dayKey,"warm",i);
+        const done = !!state[key];
+        return `<div class="warm-item${done?" checked":""}" data-toggle="${key}">
+          <div class="check${done?" checked-box":""}">${CHECK_SVG}</div>
+          <div class="txt">${w}</div>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }
+
+  const goalsHtml = d.goals.map(g=>`<div class="goal-chip">⭐ ${g}</div>`).join("");
+
+  const html = `
+    <div class="day-head">
+      <div class="ring-wrap">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle class="ring-track" cx="44" cy="44" r="${r}"></circle>
+          <circle class="ring-fill" cx="44" cy="44" r="${r}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"></circle>
+        </svg>
+        <div class="ring-hole"><b>${done}/${total}</b><small>UKOŃCZONE</small></div>
+      </div>
+      <div class="day-head-text">
+        <h1>${d.title}</h1>
+        <div class="subtitle">${d.subtitle}</div>
+        <div class="goal-row">${goalsHtml}</div>
+        <div class="day-sub-meta">${d.time ? "⏱ " + d.time : ""}</div>
+      </div>
+    </div>
+
+    ${warmHtml}
+
+    <div class="section-label"><span class="line"></span>Ćwiczenia<span class="line"></span></div>
+    ${d.exercises.map((ex,i)=>renderExercise(dayKey,ex,i)).join("")}
+
+    <div class="volume-card">
+      <h4>📊 Objętość</h4>
+      <table class="volume">
+        ${d.volume.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}
+      </table>
+      <div class="volume-total"><span>Łącznie</span><span>${d.volume.total}</span></div>
+    </div>
+
+    <div class="day-actions">
+      <button class="reset-day" data-reset="${dayKey}">Resetuj postęp dnia ${d.letter}</button>
+    </div>
+  `;
+  return html;
+}
+
+function renderAll(){
+  renderTabs();
+  document.getElementById("app").innerHTML = renderDay(currentDay);
+}
+
+document.addEventListener("click", (e)=>{
+  const toggle = e.target.closest("[data-toggle]");
+  if(toggle){
+    const key = toggle.getAttribute("data-toggle");
+    state[key] = !state[key];
+    saveState(state);
+    renderAll();
+    return;
+  }
+  const resetBtn = e.target.closest("[data-reset]");
+  if(resetBtn){
+    const dayKey = resetBtn.getAttribute("data-reset");
+    if(confirm("Wyczyścić zaznaczenia dla dnia " + DATA[dayKey].letter + "?")){
+      Object.keys(state).forEach(k=>{ if(k.startsWith(dayKey+"-")) delete state[k]; });
+      saveState(state);
+      renderAll();
+    }
+    return;
+  }
+});
+
+document.getElementById("resetAllBtn").addEventListener("click", ()=>{
+  if(confirm("Na pewno zresetować cały plan (wszystkie 3 dni)?")){
+    state = {};
+    saveState(state);
+    renderAll();
+  }
+});
+
+document.getElementById("infoToggle").addEventListener("click", ()=>{
+  document.getElementById("glossary").classList.toggle("open");
+});
+
+renderAll();
+</script>
+</body>
+</html>
